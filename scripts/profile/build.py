@@ -59,7 +59,11 @@ def main():
 
     today = datetime.datetime.now(datetime.timezone.utc).date()
     style = args.style or ("minimal" if today.toordinal() % 2 == 0 else "terminal")
-    projects = recent_projects(fetch_repos())
+    repos = fetch_repos()
+    if os.environ.get("PROFILE_TOKEN") and not any(r["private"] for r in repos):
+        print("warning: PROFILE_TOKEN is set but sees no private repos; "
+              "give it access to all repositories, not public ones only", file=sys.stderr)
+    projects = recent_projects(repos)
     svg = STYLES[style].render(projects)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(svg)
